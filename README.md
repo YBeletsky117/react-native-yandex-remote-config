@@ -1,33 +1,221 @@
-# react-native-yandex-remote-config
+# Yandex Remote Config for React Native
 
-Yandex Remote Config for React Native
+Библиотека, предназначенная для использования Feature Toggles (переключателей функций) в приложениях React Native. Библиотека предоставляет простой интерфейс для управления удалёнными конфигурациями и переключателями функций, позволяя динамически контролировать функции в вашем приложении.
 
-## Installation
+## **Установка**
 
-```sh
-npm install react-native-yandex-remote-config
+```bash
+npm install @beletsky/react-native-yandex-remote-config
+```
+или
+```bash
+yarn add @beletsky/react-native-yandex-remote-config
 ```
 
-## Usage
+## **API**
 
+### `withRemoteConfig({ flag, flagType, condition, defaultValue, defaultCondition }, WrappedComponent)`
 
-```js
-import { multiply } from 'react-native-yandex-remote-config';
+Компонент высшего порядка (HOC), который оборачивает переданный компонент и отображает его только в том случае, если условие, основанное на значении удалённого флага, выполняется. Этот HOC полезен, когда нужно контролировать видимость компонента на основе удалённых флагов конфигурации.
 
-// ...
+**Параметры**:
+- `flag`: Имя флага, который будет проверяться в удалённой конфигурации.
+- `flagType`: Тип флага, который ожидается (например, `FlagType.bool`).
+- `condition`: Условие, по которому определяется, будет ли компонент отображён. По умолчанию, проверяет значение на `true`.
+- `defaultValue`: Значение по умолчанию для флага, если его нет в конфигурации.
+- `defaultCondition`: Условие по умолчанию для отображения компонента до загрузки значения флага (по умолчанию `false`).
+- `WrappedComponent`: Компонент, который будет обёрнут и отображён в случае выполнения условия.
 
-const result = await multiply(3, 7);
+**Возвращает**:
+- Компонент, который будет отображаться только при выполнении условия.
+
+**Пример**:
+```tsx
+import React from 'react';
+import { Text } from 'react-native';
+import { withRemoteConfig, FlagType } from '@beletsky/react-native-yandex-remote-config';
+
+const MyComponent = ({ updateFlag }) => {
+  return <Text>Функция активирована!</Text>;
+};
+
+const MyComponentWithToggle = withRemoteConfig(
+  {
+    flag: 'feature_enabled',
+    flagType: FlagType.bool,
+    condition: (value) => value === true,
+    defaultCondition: false,
+  },
+  MyComponent
+);
+
+export default MyComponentWithToggle;
+```
+В этом примере MyComponentWithToggle будет отображаться только в том случае, если флаг `feature_enabled` возвращает значение true из удалённой конфигурации. Функция `updateFlag()` будет передана в обёрнутый компонент, что позволяет принудительно обновить значение флага при необходимости.
+
+### `wrapRemoteConfig({ flag, flagType, condition, callback, defaultValue })`
+
+Функция-обёртка, которая позволяет обернуть любую функцию в логику Feature Toggle. Эта функция вызовет переданный колбэк только в том случае, если заданное условие (`condition`) выполнено. Это полезно для выполнения определённых действий, если определённая функция включена в конфигурации.
+
+**Параметры**:
+- `flag`: Имя флага, который будет проверяться в удалённой конфигурации.
+- `flagType`: Тип флага, который ожидается (например, `FlagType.bool`).
+- `condition`: Условие, по которому будет определяться, нужно ли выполнять функцию. По умолчанию, проверяет значение на `true`.
+- `callback`: Функция, которая будет вызвана, если условие выполнено. Функция должна принимать значение флага и возвращать другую функцию, которая будет вызвана с переданными аргументами.
+- `defaultValue`: Значение по умолчанию для флага, если его нет в конфигурации.
+
+**Возвращает**:
+- Функция, которая возвращает промис, выполняющий переданный `callback`, если условие выполнено, или ничего не делает, если не выполнено.
+
+**Пример**:
+```tsx
+const execAlert = (flagValue: boolean) => (text: string) => {
+    Alert.alert('Feature Toggle alert', `${text}: ${flagValue}`);
+    return '';
+};
+
+const scheduledAlert = wrapRemoteConfig({
+    flag: 'test-bool',
+    flagType: FlagType.bool,
+    callback: execAlert,
+    condition: (value) => {
+        return !!value;
+    },
+});
+
+// Использование:
+scheduledAlert('Some text');
+```
+Эта функция полезна, когда вы хотите контролировать выполнение кода в зависимости от значений, загруженных из удалённой конфигурации.
+
+### `useRemoteConfig(flag, flagType, defaultValue)`
+
+Пользовательский хук, который используется для получения значения флага из удалённой конфигурации. Он позволяет вам загружать и отслеживать значения флагов в вашем приложении и предоставляет возможность принудительно обновить значение флага.
+
+**Параметры**:
+- `flag`: Имя флага, который нужно загрузить.
+- `flagType`: Тип флага, который ожидается (например, `FlagType.bool`).
+- `defaultValue`: Значение по умолчанию, если флаг не найден или его значение не задано.
+
+**Возвращает**:
+- `[state, fetchFlag, isLoading]`: Массив, содержащий три элемента:
+  - `state`: Текущее значение флага или значение по умолчанию, если флаг не найден.
+  - `fetchFlag`: Функция, которая позволяет вручную перезагрузить значение флага из удалённой конфигурации.
+  - `isLoading`: Булевое значение, указывающее, загружается ли в данный момент значение флага.
+
+**Пример**:
+```tsx
+const [featureEnabled, reloadFeature, isLoading] = useRemoteConfig('new_feature', FlagType.bool, false);
+
+if (isLoading) {
+  // Отображаем индикатор загрузки
+}
+
+if (featureEnabled) {
+  // Выполняем действие, если функция включена
+}
+
+// Для принудительного обновления значения флага:
+reloadFeature();
+```
+Этот хук полезен для динамической загрузки и использования значений флагов конфигурации в компонентах вашего приложения, а также для отслеживания состояния загрузки этих значений.
+
+## Типы
+
+### `Settings`
+
+Тип `Settings` представляет настройки для конфигурации удалённого клиента. Он включает в себя различные параметры, такие как базовый URL, сетевые настройки и очереди.
+
+**Структура:**
+```ts
+type Settings = {
+  baseURL?: string;
+  settings?: any;
+  network?: any;
+  fetchThrottle?: number;
+  clientFeatures?: Record<string, string>;
+  varioqubQueue?: any;
+  outputQueue?: any;
+};
 ```
 
+**Параметры**:
+- `baseURL`: Базовый URL для запросов.
+- `settings`: Дополнительные настройки клиента.
+- `network`: Настройки сети.
+- `fetchThrottle`: Интервал времени (в миллисекундах) между запросами к удалённой конфигурации.
+- `clientFeatures`: Объект, представляющий функции клиента в формате ключ-значение.
+- `varioqubQueue`: Очередь для обработки задач.
+- `outputQueue`: Очередь для вывода данных.
 
-## Contributing
+### `FlagType`
 
-See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
+Enum `FlagType` представляет возможные типы флагов, которые могут быть использованы в удалённой конфигурации.
 
-## License
+**Структура:**
+```ts
+enum FlagType {
+  string = 'string',
+  int = 'int',
+  double = 'double',
+  bool = 'bool',
+}
+```
 
-MIT
+**Значения**:
+- `baseURL`: Базовый URL для запросов.
+- `string`: Строковый тип флага.
+- `int`: Целочисленный тип флага.
+- `double`: Числовой тип флага с плавающей точкой.
+- `bool`: Логический тип флага.
 
----
+### `ValueType<T extends FlagType>`
 
-Made with [create-react-native-library](https://github.com/callstack/react-native-builder-bob)
+Тип `ValueType` используется для определения возможного значения флага в зависимости от его типа. Это условный тип, который определяет, какое значение может принимать флаг в зависимости от его типа `FlagType`.
+
+**Структура:**
+```ts
+type ValueType<T extends FlagType> = T extends FlagType.string
+  ? string
+  : T extends FlagType.bool
+    ? boolean
+    : number;
+```
+
+**Описание**:
+- Если тип флага `string`, то значение будет строкой.
+- Если тип флага `bool`, то значение будет логическим (`boolean`).
+- В остальных случаях значение будет числовым (`number`).
+
+### `FCFT<P>`
+
+Интерфейс `FCFT` описывает функциональный компонент с дополнительным свойством `updateFlag()`, который передаётся обёрнутому компоненту с использованием `withRemoteConfig()`.
+
+**Структура:**
+```ts
+interface FCFT<P> {
+  (
+    props: PropsWithChildren<
+      P & {
+      updateFlag: () => void;
+    }
+    >,
+    context?: any
+  ): ReactElement<any, any> | null;
+
+  propTypes?: WeakValidationMap<P> | undefined;
+  contextTypes?: ValidationMap<any> | undefined;
+  defaultProps?: Partial<P> | undefined;
+  displayName?: string | undefined;
+}
+```
+
+**Описание**:
+- `props`: Свойства компонента, которые включают в себя все свойства, передаваемые в компонент, а также функцию updateFlag.
+- `context`: Опциональный контекст для компонента.
+- `propTypes`: Опциональные типы проверок свойств компонента.
+- `contextTypes`: Опциональные типы проверок контекста.
+- `defaultProps`: Опциональные свойства по умолчанию для компонента.
+- `displayName`: Опциональное отображаемое имя компонента.
+
+Этот интерфейс полезен для определения компонентов, которые будут использоваться с HOC `withRemoteConfig()` и которым потребуется функция обновления значения флага.

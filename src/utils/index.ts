@@ -1,2 +1,2 @@
-export * from './withFeatureToggle';
-export * from './wrapFeatureToggle';
+export * from './withRemoteConfig';
+export * from './wrapRemoteConfig';

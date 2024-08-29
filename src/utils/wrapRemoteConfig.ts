@@ -2,7 +2,7 @@ import { YandexRemoteConfig } from '../';
 import type { FlagType } from '../';
 import type { ValueType } from '../types';
 
-export const wrapFeatureToggle =
+export const wrapRemoteConfig =
   <P extends any[], R, T extends FlagType, K extends ValueType<T>>({
     flag,
     flagType,
@@ -15,7 +15,6 @@ export const wrapFeatureToggle =
     callback: (flagValue: K) => (...props: P) => R;
     condition?: (value: ValueType<T>) => boolean;
     defaultValue?: K;
-    defaultCondition?: boolean;
   }): ((...props: P) => Promise<R | void>) =>
   async (...props) => {
     try {

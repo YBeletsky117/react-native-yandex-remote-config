@@ -16,7 +16,7 @@ import {
   YandexRemoteConfig,
   FlagType,
   useRemoteConfig,
-  wrapFeatureToggle,
+  wrapRemoteConfig,
 } from '@beletsky/react-native-yandex-remote-config';
 import { TestComponent } from './TestComponent';
 
@@ -58,7 +58,7 @@ export default function App() {
     return 'sss';
   };
 
-  const scheduledAlert = wrapFeatureToggle({
+  const scheduledAlert = wrapRemoteConfig({
     flag: 'test-bool',
     flagType: FlagType.bool,
     callback: execAlert,
