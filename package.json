@@ -1,5 +1,5 @@
 {
-  "name": "react-native-yandex-remote-config",
+  "name": "@beletsky/react-native-yandex-remote-config",
   "version": "0.1.0",
   "description": "Yandex Remote Config for React Native",
   "source": "./src/index.tsx",
@@ -60,6 +60,7 @@
   },
   "homepage": "https://github.com/YBeletsky117/react-native-yandex-remote-config#readme",
   "publishConfig": {
+    "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
@@ -69,6 +70,7 @@
     "@release-it/conventional-changelog": "^5.0.0",
     "@types/jest": "^29.5.5",
     "@types/react": "^18.2.44",
+    "auto-changelog": "2.4.0",
     "commitlint": "^17.0.2",
     "del-cli": "^5.1.0",
     "eslint": "^8.51.0",

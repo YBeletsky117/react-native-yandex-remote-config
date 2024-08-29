@@ -2,7 +2,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "paths": {
-      "react-native-yandex-remote-config": ["./src/index"]
+      "@beletsky/react-native-yandex-remote-config": ["./src/index"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

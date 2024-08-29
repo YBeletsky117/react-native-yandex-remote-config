@@ -1,0 +1,20 @@
+{
+  "hooks": {
+    "before:init": "git fetch --prune --prune-tags origin",
+    "after:bump": "auto-changelog -p",
+    "after:release": "echo \uD83C\uDF7E\uD83C\uDF89 Congratulations, the new version of your module has been successfully published!"
+  },
+  "git": {
+    "commitMessage": "chore: release ${version}",
+    "tagName": "v${version}"
+  },
+  "npm": {
+    "publish": true
+  },
+  "github": true,
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "preset": "conventionalcommits"
+    }
+  }
+}
