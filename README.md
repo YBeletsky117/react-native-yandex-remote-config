@@ -12,6 +12,14 @@ npm install @beletsky/react-native-yandex-remote-config
 yarn add @beletsky/react-native-yandex-remote-config
 ```
 
+### Для IOS
+
+Перед использованием библиотеки на IOS устройствах, необходимо выполнить установку `pod`
+
+```bash
+pod install
+```
+
 ## **API**
 
 ### `withRemoteConfig({ flag, flagType, condition, defaultValue, defaultCondition }, WrappedComponent)`
