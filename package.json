@@ -47,7 +47,14 @@
   "keywords": [
     "react-native",
     "ios",
-    "android"
+    "android",
+    "remote",
+    "yandex",
+    "appmetrica",
+    "remote-config",
+    "yandex-remote-config",
+    "react-native-remote-config",
+    "appmetrica-remote-config"
   ],
   "repository": {
     "type": "git",
